@@ -7,8 +7,9 @@ const getProductsList = async (request, reply) => {
     try {
         const productsLimit = 10
         const cacheId = 'productsList'
-        // Проверяем наличие результатов запроса в кэше
         const cachedData = cache.get(cacheId);
+
+        // Check if the query results are in the cache
         if (cachedData) {
             return cachedData;
         }
@@ -21,6 +22,7 @@ const getProductsList = async (request, reply) => {
         }
 
         const products = await stripe.products.list({ expand: ['data.default_price'], limit: productsLimit })
+
         const productsList = await Promise.all(products.data.map(createProductsList));
 
         const data = { ...products, data: productsList }
@@ -29,8 +31,7 @@ const getProductsList = async (request, reply) => {
 
         return data
     } catch (error) {
-        console.error('Ошибка при получении списка товаров из Stripe:', error);
-        throw error;
+        return reply.code(500).send(error.message)
     }
 }
 
